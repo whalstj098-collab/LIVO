@@ -111,7 +111,50 @@ function getQuery(name) {
 // ===============================
 
 // 회원가입 페이지
-function signupPage() {}
+// 회원가입 페이지
+function signupPage() {
+  // 회원가입 폼 가져오기
+  const signupForm = document.getElementById("signupForm");
+
+  // 회원가입 페이지가 아니면 종료
+  if (!signupForm) return;
+
+  // 폼 제출 이벤트
+  signupForm.addEventListener("submit", async function (event) {
+    // 새로고침 방지
+    event.preventDefault();
+
+    // 입력값 가져오기
+    const name = document.getElementById("signupName").value.trim();
+    const password = document.getElementById("signupPassword").value.trim();
+
+    // 입력값 확인
+    if (name === "" || password === "") {
+      alert("이름과 비밀번호를 입력하세요.");
+      return;
+    }
+
+    try {
+      // 회원가입 요청
+      const result = await request("/signup", "POST", {
+        name,
+        password,
+      });
+
+      // 서버 응답 출력
+      alert(result.message);
+
+      // 회원가입 성공 시 로그인 페이지로 이동
+      if (result.success) {
+        location.href = "login.html";
+      }
+    } catch (error) {
+      console.error(error);
+
+      alert("회원가입 중 오류가 발생했습니다.");
+    }
+  });
+}
 
 // 로그인 페이지
 function loginPage() {}
