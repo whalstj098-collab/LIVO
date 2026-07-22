@@ -131,141 +131,176 @@ app.get("/polls", (req, res) => {
 
   res.json(data.polls);
 });
+// 특정 투표 조회
+// ===============================
+// Socket.IO 연결
+// ===============================
 
-// 투표 생성
-app.post("/polls", (req, res) => {
-  const data = readData();
+const socket = io("http://localhost:3000");
 
-  const { title, options } = req.body;
-
-  if (!title || !options) {
-    return res.status(400).json({
-      message: "제목과 선택지가 필요합니다.",
-    });
-  }
-
-  const newPoll = {
-    id: Date.now(),
-
-    title,
-
-    options,
-
-    createdAt: new Date().toISOString(),
-  };
-
-  data.polls.push(newPoll);
-
-  saveData(data);
-
-  res.status(201).json({
-    message: "투표가 생성되었습니다.",
-
-    poll: newPoll,
-  });
+socket.on("connect", () => {
+  console.log("Socket 연결 완료:", socket.id);
 });
 
-// 투표 참여
-app.post("/polls/:id/vote", (req, res) => {
-  const data = readData();
+// 서버에서 투표 발생 알림 수신
 
-  const pollId = Number(req.params.id);
+socket.on("voteUpdate", (vote) => {
+  console.log("실시간 투표 변경:", vote);
 
-  const { userName, option } = req.body;
+  // 결과 페이지일 경우 자동 갱신
 
-  if (!userName || !option) {
-    return res.status(400).json({
-      message: "사용자와 선택지가 필요합니다.",
-    });
+  if (location.pathname.includes("result.html")) {
+    resultPage();
   }
-
-  const poll = data.polls.find((poll) => poll.id === pollId);
-
-  if (!poll) {
-    return res.status(404).json({
-      message: "존재하지 않는 투표입니다.",
-    });
-  }
-
-  if (!poll.options.includes(option)) {
-    return res.status(400).json({
-      message: "잘못된 선택지입니다.",
-    });
-  }
-
-  const newVote = {
-    id: Date.now(),
-
-    pollId,
-
-    userName,
-
-    option,
-  };
-
-  data.votes.push(newVote);
-
-  saveData(data);
-
-  // 실시간 전달
-  io.emit("voteUpdate", newVote);
-
-  res.status(201).json({
-    message: "투표 완료",
-
-    vote: newVote,
-  });
 });
 
-// 투표 결과 조회
-app.get("/polls/:id/result", (req, res) => {
-  const data = readData();
+// ===============================
+// 메인 페이지
+// ===============================
 
-  const pollId = Number(req.params.id);
+async function indexPage() {
+  const pollList = document.getElementById("pollList");
 
-  const poll = data.polls.find((poll) => poll.id === pollId);
+  if (!pollList) return;
 
-  if (!poll) {
-    return res.status(404).json({
-      message: "존재하지 않는 투표입니다.",
-    });
-  }
+  try {
+    const polls = await request("/polls");
 
-  const result = {};
+    pollList.innerHTML = "";
 
-  poll.options.forEach((option) => {
-    result[option] = 0;
-  });
+    if (polls.length === 0) {
+      pollList.innerHTML = `
 
-  data.votes.forEach((vote) => {
-    if (vote.pollId === pollId) {
-      result[vote.option]++;
+        <p class="message">
+          등록된 투표가 없습니다.
+        </p>
+
+      `;
+
+      return;
     }
-  });
 
-  res.json({
-    title: poll.title,
+    polls.forEach((poll) => {
+      const card = document.createElement("div");
 
-    result,
-  });
-});
+      card.className = "poll-card";
 
-// ====================
-// Socket.IO
-// ====================
+      card.innerHTML = `
 
-io.on("connection", (socket) => {
-  console.log("사용자 접속:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("사용자 종료:", socket.id);
-  });
-});
+        <h3>
+          ${poll.title}
+        </h3>
 
-// ====================
-// 서버 실행
-// ====================
 
-server.listen(PORT, () => {
-  console.log(`서버 실행 : http://localhost:${PORT}`);
-});
+
+        <p>
+          선택지 :
+          ${poll.options.join(", ")}
+        </p>
+
+
+
+        <button
+          onclick="
+          location.href='vote.html?id=${poll.id}'
+          ">
+
+          투표하기
+
+        </button>
+
+
+
+
+        <button
+          onclick="
+          location.href='result.html?id=${poll.id}'
+          ">
+
+          결과 보기
+
+        </button>
+
+
+
+      `;
+
+      pollList.appendChild(card);
+    });
+  } catch (error) {
+    console.error("투표 목록 오류", error);
+
+    alert("투표 목록을 불러오지 못했습니다.");
+  }
+}
+
+// ===============================
+// 결과 페이지
+// ===============================
+
+async function resultPage() {
+  const resultList = document.getElementById("resultList");
+
+  if (!resultList) return;
+
+  // URL에서 투표 id 가져오기
+
+  const params = new URLSearchParams(location.search);
+
+  const pollId = params.get("id");
+
+  if (!pollId) {
+    alert("투표 정보가 없습니다.");
+
+    location.href = "index.html";
+
+    return;
+  }
+
+  try {
+    const result = await request(`/polls/${pollId}/result`);
+
+    const title = document.getElementById("resultTitle");
+
+    if (title) {
+      title.textContent = result.title;
+    }
+
+    resultList.innerHTML = "";
+
+    result.results.forEach((item) => {
+      resultList.innerHTML += `
+
+
+        <div class="result-card">
+
+
+          <h3>
+
+            ${item.option}
+
+          </h3>
+
+
+
+          <p>
+
+            득표수 :
+            ${item.count}표
+
+          </p>
+
+
+
+        </div>
+
+
+      `;
+    });
+  } catch (error) {
+    console.error("결과 조회 오류", error);
+
+    alert("결과를 불러오지 못했습니다.");
+  }
+}

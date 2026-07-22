@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>LIVO | 투표하기</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>LIVO</h1>
+
+      <nav>
+        <a href="index.html">홈</a>
+        <a href="vote_create.html"> 투표 만들기 </a>
+        <a href="result.html"> 투표 결과 </a>
+
+        <button id="logoutBtn" onclick="logout()">로그아웃</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2 id="pollTitle">투표 제목</h2>
+
+        <form id="voteForm">
+          <div id="optionList"></div>
+
+          <button type="submit">투표하기</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

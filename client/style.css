@@ -9,8 +9,8 @@
 }
 
 body {
-  font-family: "Malgun Gothic", sans-serif;
-  background: #f4f6f9;
+  font-family: "Malgun Gothic", "Noto Sans KR", sans-serif;
+  background: #f5f7fb;
   color: #333;
 }
 
@@ -21,27 +21,37 @@ body {
 header {
   width: 100%;
   height: 70px;
+
   background: #2563eb;
   color: white;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 40px;
+
+  padding: 0 50px;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
-  font-size: 30px;
+  font-size: 28px;
+  font-weight: 700;
 }
 
 nav {
   display: flex;
+  align-items: center;
   gap: 20px;
 }
 
 nav a {
   color: white;
   text-decoration: none;
+
+  font-size: 15px;
   font-weight: bold;
+
   transition: 0.2s;
 }
 
@@ -49,15 +59,39 @@ nav a:hover {
   opacity: 0.8;
 }
 
+nav button {
+  background: white;
+  color: #2563eb;
+
+  border: none;
+  border-radius: 8px;
+
+  padding: 8px 16px;
+
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+nav button:hover {
+  background: #e5e7eb;
+}
+
 /* =========================
-   메인
+   메인 영역
 ========================= */
 
 main {
   width: 90%;
+  max-width: 1100px;
+
   margin: 40px auto;
+
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+
+  gap: 35px;
 }
 
 /* =========================
@@ -66,33 +100,39 @@ main {
 
 .title {
   text-align: center;
-  margin-bottom: 40px;
 }
 
 .title h2 {
-  font-size: 35px;
-  margin-bottom: 10px;
+  font-size: 38px;
+
+  margin-bottom: 12px;
 }
 
 .title p {
   color: #666;
+
+  font-size: 17px;
 }
 
 /* =========================
-   카드
+   카드 공통
 ========================= */
 
 .card {
-  background: white;
   width: 100%;
-  max-width: 450px;
-  border-radius: 12px;
+
+  background: white;
+
   padding: 30px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+  border-radius: 18px;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .card h2 {
   text-align: center;
+
   margin-bottom: 25px;
 }
 
@@ -108,18 +148,34 @@ input,
 textarea,
 select {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+
+  padding: 13px 15px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
   font-size: 16px;
+
+  margin-bottom: 15px;
+
   outline: none;
+
+  transition: 0.2s;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+textarea {
+  resize: none;
+
+  height: 100px;
 }
 
 /* =========================
@@ -127,18 +183,29 @@ select:focus {
 ========================= */
 
 button {
-  padding: 12px 20px;
   border: none;
-  border-radius: 8px;
+
   background: #2563eb;
+
   color: white;
+
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
   cursor: pointer;
+
   font-size: 16px;
+
+  font-weight: bold;
+
   transition: 0.2s;
 }
 
 button:hover {
   background: #1d4ed8;
+
+  transform: translateY(-2px);
 }
 
 /* =========================
@@ -146,30 +213,73 @@ button:hover {
 ========================= */
 
 #pollList {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 
-  gap: 20px;
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+  gap: 25px;
 }
+
+/* =========================
+   투표 카드
+========================= */
 
 .poll {
   background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+  padding: 25px;
+
+  border-radius: 16px;
+
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+
+  transition: 0.2s;
+}
+
+.poll:hover {
+  transform: translateY(-5px);
 }
 
 .poll h3 {
-  margin-bottom: 10px;
+  font-size: 22px;
+
+  margin-bottom: 12px;
 }
 
 .poll p {
-  margin-bottom: 15px;
   color: #666;
+
+  margin-bottom: 15px;
+
+  line-height: 1.5;
 }
 
 .poll button {
-  margin-right: 10px;
+  width: 100%;
+
+  margin-top: 10px;
+}
+
+/* =========================
+   결과 영역
+========================= */
+
+.result {
+  margin-top: 20px;
+
+  background: #f8fafc;
+
+  padding: 15px;
+
+  border-radius: 12px;
+}
+
+.result p {
+  margin-bottom: 8px;
+
+  font-weight: bold;
 }
 
 /* =========================
@@ -178,7 +288,20 @@ button:hover {
 
 form {
   display: flex;
+
   flex-direction: column;
+}
+
+/* =========================
+   로딩 / 메시지
+========================= */
+
+.message {
+  text-align: center;
+
+  color: #777;
+
+  padding: 20px;
 }
 
 /* =========================
@@ -187,42 +310,54 @@ form {
 
 footer {
   text-align: center;
-  color: #888;
+
   padding: 30px;
+
+  color: #888;
+
+  font-size: 14px;
 }
 
 /* =========================
-   반응형
+   모바일 대응
 ========================= */
 
 @media (max-width: 768px) {
   header {
-    flex-direction: column;
     height: auto;
+
     padding: 20px;
+
+    flex-direction: column;
+
+    gap: 15px;
+  }
+
+  header h1 {
+    font-size: 24px;
   }
 
   nav {
-    margin-top: 15px;
     flex-wrap: wrap;
+
     justify-content: center;
   }
 
   main {
     width: 95%;
+
+    margin: 25px auto;
   }
-}
 
-nav button {
-  background: white;
-  color: #2563eb;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  font-weight: bold;
-}
+  .title h2 {
+    font-size: 30px;
+  }
 
-nav button:hover {
-  background: #e5e7eb;
+  .card {
+    padding: 20px;
+  }
+
+  #pollList {
+    grid-template-columns: 1fr;
+  }
 }

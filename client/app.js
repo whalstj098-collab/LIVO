@@ -45,6 +45,11 @@ switch (currentPage) {
     updateMenu();
     indexPage();
     break;
+
+  case "vote.html":
+    votePage();
+
+    break;
 }
 
 // ===============================
@@ -226,66 +231,147 @@ function loginPage() {
 // ===============================
 // 메인 페이지
 // ===============================
+// ===============================
+// 메인 페이지 (투표 목록)
+// ===============================
+
 async function indexPage() {
-  // 투표 목록을 표시할 영역
   const pollList = document.getElementById("pollList");
 
   // index.html이 아니면 종료
   if (!pollList) return;
 
   try {
-    // 서버에서 투표 목록 가져오기
+    // 투표 목록 요청
     const polls = await request("/polls");
 
-    // 기존 내용 삭제
+    // 초기화
     pollList.innerHTML = "";
 
-    // 투표가 없는 경우
+    // 투표 없음
     if (polls.length === 0) {
       pollList.innerHTML = `
-                <p>등록된 투표가 없습니다.</p>
-            `;
+        <p class="message">
+          등록된 투표가 없습니다.
+        </p>
+      `;
 
       return;
     }
 
-    // 투표 목록 출력
+    // 투표 카드 생성
     polls.forEach((poll) => {
       const card = document.createElement("div");
 
       card.className = "poll-card";
 
       card.innerHTML = `
-                <h3>${poll.title}</h3>
 
-                <p>선택지 : ${poll.options.join(", ")}</p>
+        <h3>
+          ${poll.title}
+        </h3>
 
-                <button onclick="location.href='result.html?id=${poll.id}'">
-                    결과 보기
-                </button>
 
-                <button onclick="votePoll(${poll.id})">
-                    투표하기
-                </button>
-            `;
+        <p>
+          선택지 : 
+          ${poll.options.join(", ")}
+        </p>
+
+
+
+        <button
+          onclick="location.href='vote.html?id=${poll.id}'">
+          투표하기
+        </button>
+
+
+
+        <button
+          onclick="location.href='result.html?id=${poll.id}'">
+          결과 보기
+        </button>
+
+
+      `;
 
       pollList.appendChild(card);
     });
   } catch (error) {
-    console.error(error);
+    console.error("투표 목록 오류", error);
 
     alert("투표 목록을 불러오지 못했습니다.");
   }
 }
 
-// 투표 생성 페이지
-function createPage() {
-  // 로그인 여부 확인
-  if (!checkLogin()) return;
-}
-
+// ===============================
 // 결과 페이지
-function resultPage() {}
+// ===============================
+
+async function resultPage() {
+  const resultList = document.getElementById("resultList");
+
+  if (!resultList) return;
+
+  // URL에서 id 가져오기
+
+  const params = new URLSearchParams(location.search);
+
+  const pollId = params.get("id");
+
+  if (!pollId) {
+    alert("투표 정보가 없습니다.");
+
+    location.href = "index.html";
+
+    return;
+  }
+
+  try {
+    // 결과 요청
+
+    const result = await request(`/polls/${pollId}/result`);
+
+    // 제목 출력
+
+    const title = document.getElementById("resultTitle");
+
+    if (title) {
+      title.textContent = result.title;
+    }
+
+    // 기존 결과 삭제
+
+    resultList.innerHTML = "";
+
+    // 결과 출력
+
+    result.options.forEach((option) => {
+      resultList.innerHTML += `
+
+          <div class="result-card">
+
+
+            <h3>
+              ${option.name}
+            </h3>
+
+
+            <p>
+              득표수 :
+              ${option.count}표
+            </p>
+
+
+          </div>
+
+        `;
+    });
+  } catch (error) {
+    console.error("결과 조회 오류", error);
+
+    alert("결과를 불러오지 못했습니다.");
+  }
+}
 
 // ===============================
 // 투표 생성 페이지
@@ -380,5 +466,82 @@ function updateMenu() {
     if (loginMenu) loginMenu.style.display = "inline-block";
     if (signupMenu) signupMenu.style.display = "inline-block";
     if (logoutBtn) logoutBtn.style.display = "none";
+  }
+}
+
+// ===============================
+// 투표 페이지
+// ===============================
+async function votePage() {
+  // 로그인 확인
+  if (!checkLogin()) return;
+
+  const voteForm = document.getElementById("voteForm");
+
+  if (!voteForm) return;
+
+  // 주소에서 id 가져오기
+  const params = new URLSearchParams(location.search);
+
+  const pollId = params.get("id");
+
+  try {
+    // 투표 정보 가져오기
+    const poll = await request(`/polls/${pollId}`);
+
+    // 제목 표시
+    document.getElementById("pollTitle").textContent = poll.title;
+
+    const optionList = document.getElementById("optionList");
+
+    // 선택지 생성
+    poll.options.forEach((option) => {
+      optionList.innerHTML += `
+
+            <label>
+
+                <input 
+                    type="radio"
+                    name="option"
+                    value="${option}"
+                >
+
+                ${option}
+
+            </label>
+
+            <br>
+
+            `;
+    });
+
+    // 투표 버튼
+    voteForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const selected = document.querySelector("input[name='option']:checked");
+
+      if (!selected) {
+        alert("선택지를 선택하세요.");
+
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      const result = await request(`/polls/${pollId}/vote`, "POST", {
+        userName: user.name,
+
+        option: selected.value,
+      });
+
+      alert(result.message);
+
+      location.href = `result.html?id=${pollId}`;
+    });
+  } catch (error) {
+    console.error(error);
+
+    alert("투표 정보를 불러오지 못했습니다.");
   }
 }
