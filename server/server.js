@@ -104,16 +104,16 @@ app.post("/login", (req, res) => {
 
   if (!user) {
     return res.status(401).json({
+      success: false,
       message: "아이디 또는 비밀번호가 틀렸습니다.",
     });
   }
 
   res.json({
+    success: true,
     message: "로그인 성공",
-
     user: {
       id: user.id,
-
       name: user.name,
     },
   });

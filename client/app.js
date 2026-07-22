@@ -111,8 +111,13 @@ function getQuery(name) {
 // ===============================
 
 // 회원가입 페이지
-// 회원가입 페이지
 function signupPage() {
+  // 이미 로그인한 경우 메인으로 이동
+  if (localStorage.getItem("user")) {
+    location.href = "index.html";
+
+    return;
+  }
   // 회원가입 폼 가져오기
   const signupForm = document.getElementById("signupForm");
 
@@ -157,10 +162,76 @@ function signupPage() {
 }
 
 // 로그인 페이지
-function loginPage() {}
+function loginPage() {
+  // 이미 로그인한 경우 메인 페이지로 이동
+  if (localStorage.getItem("user")) {
+    location.href = "index.html";
+    return;
+  }
+
+  // 로그인 폼 가져오기
+  const loginForm = document.getElementById("loginForm");
+
+  // 로그인 페이지가 아니면 종료
+  if (!loginForm) return;
+
+  // 폼 제출 이벤트
+  loginForm.addEventListener("submit", async function (event) {
+    // 새로고침 방지
+    event.preventDefault();
+
+    // 입력값 가져오기
+    const name = document.getElementById("loginName").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    // 입력값 확인
+    if (name === "" || password === "") {
+      alert("이름과 비밀번호를 입력하세요.");
+      return;
+    }
+
+    try {
+      // 로그인 요청
+      const result = await request("/login", "POST", {
+        name,
+        password,
+      });
+
+      // 로그인 성공
+      if (result.success) {
+        // 로그인 정보 저장
+        localStorage.setItem("user", JSON.stringify(result.user));
+
+        alert(result.message);
+
+        // 메인 페이지 이동
+        location.href = "index.html";
+
+        return;
+      }
+
+      // 로그인 실패
+      alert(result.message);
+    } catch (error) {
+      console.error(error);
+
+      alert("로그인 중 오류가 발생했습니다.");
+    }
+  });
+}
 
 // 메인 페이지
-function indexPage() {}
+function indexPage() {
+  // 로그인 여부 확인
+  if (!checkLogin()) return;
+
+  // 로그아웃 버튼
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+}
 
 // 투표 생성 페이지
 function createPage() {
@@ -172,4 +243,66 @@ function createPage() {
 function resultPage() {
   // 로그인 여부 확인
   if (!checkLogin()) return;
+}
+
+// ===============================
+// 투표 생성 페이지
+// ===============================
+function createPage() {
+  // 로그인 여부 확인
+  if (!checkLogin()) return;
+
+  // 투표 생성 폼 가져오기
+  const pollForm = document.getElementById("pollForm");
+
+  // create.html이 아니면 종료
+  if (!pollForm) return;
+
+  // 폼 제출 이벤트
+  pollForm.addEventListener("submit", async function (event) {
+    // 새로고침 방지
+    event.preventDefault();
+
+    // 입력값 가져오기
+    const title = document.getElementById("title").value.trim();
+
+    const optionText = document.getElementById("options").value.trim();
+
+    // 입력값 확인
+    if (title === "" || optionText === "") {
+      alert("제목과 선택지를 입력하세요.");
+
+      return;
+    }
+
+    // 쉼표 기준으로 선택지 분리
+    const options = optionText
+      .split(",")
+      .map((option) => option.trim())
+      .filter((option) => option !== "");
+
+    // 선택지는 최소 2개
+    if (options.length < 2) {
+      alert("선택지는 2개 이상 입력하세요.");
+
+      return;
+    }
+
+    try {
+      // 서버에 투표 생성 요청
+      const result = await request("/polls", "POST", {
+        title,
+        options,
+      });
+
+      alert(result.message);
+
+      // 생성 성공 시 메인으로 이동
+      location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+
+      alert("투표 생성 중 오류가 발생했습니다.");
+    }
+  });
 }
