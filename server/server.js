@@ -1,42 +1,40 @@
-// Express 서버
+// ====================
+// 필요한 라이브러리
+// ====================
+
 const express = require("express");
-
-// HTTP 서버 생성
 const http = require("http");
-
-// Socket.IO (실시간 통신)
 const { Server } = require("socket.io");
-
-// 파일 입출력
 const fs = require("fs");
 
 // ====================
-// 서버 기본 설정
+// 서버 설정
 // ====================
 
 const app = express();
+
 const server = http.createServer(app);
+
 const io = new Server(server);
 
 const PORT = 3000;
 
-// data.json 위치
 const DATA_FILE = "./data.json";
 
-// JSON 요청 데이터 사용
 app.use(express.json());
 
 // ====================
-// JSON 데이터 관리 함수
+// JSON 데이터 관리
 // ====================
 
-// data.json 읽기
+// 데이터 읽기
 function readData() {
   const data = fs.readFileSync(DATA_FILE, "utf-8");
+
   return JSON.parse(data);
 }
 
-// data.json 저장
+// 데이터 저장
 function saveData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 4));
 }
@@ -45,7 +43,6 @@ function saveData(data) {
 // 기본 API
 // ====================
 
-// 서버 확인
 app.get("/", (req, res) => {
   res.send("실시간 투표 서버가 실행 중입니다.");
 });
@@ -60,14 +57,12 @@ app.post("/signup", (req, res) => {
 
   const { name, password } = req.body;
 
-  // 입력값 확인
   if (!name || !password) {
     return res.status(400).json({
       message: "이름과 비밀번호를 입력해주세요.",
     });
   }
 
-  // 이미 가입된 사용자인지 확인
   const existsUser = data.users.find((user) => user.name === name);
 
   if (existsUser) {
@@ -78,18 +73,19 @@ app.post("/signup", (req, res) => {
 
   const newUser = {
     id: Date.now(),
+
     name,
+
     password,
   };
 
-  // 사용자 추가
   data.users.push(newUser);
 
-  // 파일 저장
   saveData(data);
 
   res.status(201).json({
     message: "회원가입 성공",
+
     user: newUser,
   });
 });
@@ -100,30 +96,22 @@ app.post("/login", (req, res) => {
 
   const { name, password } = req.body;
 
-  // 입력값 확인
-  if (!name || !password) {
-    return res.status(400).json({
-      message: "이름과 비밀번호를 입력해주세요.",
-    });
-  }
-
-  // 사용자 찾기
   const user = data.users.find(
     (user) => user.name === name && user.password === password,
   );
 
-  // 로그인 실패
   if (!user) {
     return res.status(401).json({
       message: "아이디 또는 비밀번호가 틀렸습니다.",
     });
   }
 
-  // 로그인 성공
   res.json({
     message: "로그인 성공",
+
     user: {
       id: user.id,
+
       name: user.name,
     },
   });
@@ -146,7 +134,6 @@ app.post("/polls", (req, res) => {
 
   const { title, options } = req.body;
 
-  // 입력값 확인
   if (!title || !options) {
     return res.status(400).json({
       message: "제목과 선택지가 필요합니다.",
@@ -155,20 +142,107 @@ app.post("/polls", (req, res) => {
 
   const newPoll = {
     id: Date.now(),
-    title: title,
-    options: options,
+
+    title,
+
+    options,
+
     createdAt: new Date().toISOString(),
   };
 
-  // 투표 추가
   data.polls.push(newPoll);
 
-  // 파일 저장
   saveData(data);
 
   res.status(201).json({
     message: "투표가 생성되었습니다.",
+
     poll: newPoll,
+  });
+});
+
+// 투표 참여
+app.post("/polls/:id/vote", (req, res) => {
+  const data = readData();
+
+  const pollId = Number(req.params.id);
+
+  const { userName, option } = req.body;
+
+  if (!userName || !option) {
+    return res.status(400).json({
+      message: "사용자와 선택지가 필요합니다.",
+    });
+  }
+
+  const poll = data.polls.find((poll) => poll.id === pollId);
+
+  if (!poll) {
+    return res.status(404).json({
+      message: "존재하지 않는 투표입니다.",
+    });
+  }
+
+  if (!poll.options.includes(option)) {
+    return res.status(400).json({
+      message: "잘못된 선택지입니다.",
+    });
+  }
+
+  const newVote = {
+    id: Date.now(),
+
+    pollId,
+
+    userName,
+
+    option,
+  };
+
+  data.votes.push(newVote);
+
+  saveData(data);
+
+  // 실시간 전달
+  io.emit("voteUpdate", newVote);
+
+  res.status(201).json({
+    message: "투표 완료",
+
+    vote: newVote,
+  });
+});
+
+// 투표 결과 조회
+app.get("/polls/:id/result", (req, res) => {
+  const data = readData();
+
+  const pollId = Number(req.params.id);
+
+  const poll = data.polls.find((poll) => poll.id === pollId);
+
+  if (!poll) {
+    return res.status(404).json({
+      message: "존재하지 않는 투표입니다.",
+    });
+  }
+
+  const result = {};
+
+  poll.options.forEach((option) => {
+    result[option] = 0;
+  });
+
+  data.votes.forEach((vote) => {
+    if (vote.pollId === pollId) {
+      result[vote.option]++;
+    }
+  });
+
+  res.json({
+    title: poll.title,
+
+    result,
   });
 });
 
@@ -177,10 +251,10 @@ app.post("/polls", (req, res) => {
 // ====================
 
 io.on("connection", (socket) => {
-  console.log("사용자 접속 :", socket.id);
+  console.log("사용자 접속:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("사용자 종료 :", socket.id);
+    console.log("사용자 종료:", socket.id);
   });
 });
 
