@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIVO | 투표 결과</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>LIVO</h1>
+
+      <nav>
+        <a href="index.html">홈</a>
+        <a href="create.html">투표 만들기</a>
+        <a href="login.html">로그인</a>
+        <a href="signup.html">회원가입</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2 id="resultTitle">투표 결과</h2>
+
+        <div id="resultList">
+          <!-- JavaScript에서 결과 출력 -->
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

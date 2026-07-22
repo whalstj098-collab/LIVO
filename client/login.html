@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIVO | 로그인</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>LIVO</h1>
+
+      <nav>
+        <a href="index.html">홈</a>
+        <a href="vote_create.html">투표 만들기</a>
+        <a href="login.html">로그인</a>
+        <a href="signup.html">회원가입</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>로그인</h2>
+
+        <form id="loginForm">
+          <input type="text" id="loginName" placeholder="이름" required />
+
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="비밀번호"
+            required
+          />
+
+          <button type="submit">로그인</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

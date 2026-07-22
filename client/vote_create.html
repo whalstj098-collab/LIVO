@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIVO | 투표 만들기</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>LIVO</h1>
+
+      <nav>
+        <a href="index.html">홈</a>
+        <a href="vote_create.html">투표 만들기</a>
+        <a href="login.html">로그인</a>
+        <a href="signup.html">회원가입</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>새 투표 만들기</h2>
+
+        <form id="pollForm">
+          <input type="text" id="title" placeholder="투표 제목" required />
+
+          <textarea
+            id="description"
+            placeholder="투표 설명 (선택)"
+            rows="4"
+          ></textarea>
+
+          <input
+            type="text"
+            id="options"
+            placeholder="선택지를 쉼표(,)로 구분해서 입력하세요."
+            required
+          />
+
+          <button type="submit">투표 생성</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
