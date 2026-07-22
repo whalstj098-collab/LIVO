@@ -1,7 +1,7 @@
 // ====================
 // 필요한 라이브러리
 // ====================
-
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
@@ -24,6 +24,8 @@ const DATA_FILE = "./data.json";
 
 app.use(express.json());
 app.use(cors());
+// client 폴더의 정적 파일 제공
+app.use(express.static(path.join(__dirname, "../client")));
 
 // ====================
 // JSON 데이터 관리
@@ -46,7 +48,7 @@ function saveData(data) {
 // ====================
 
 app.get("/", (req, res) => {
-  res.send("실시간 투표 서버가 실행 중입니다.");
+  res.sendFile(path.join(__dirname, "../client/index.html"));
 });
 
 // ====================

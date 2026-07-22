@@ -23,10 +23,12 @@ const currentPage = window.location.pathname.split("/").pop();
 
 switch (currentPage) {
   case "signup.html":
+    updateMenu();
     signupPage();
     break;
 
   case "login.html":
+    updateMenu();
     loginPage();
     break;
 
@@ -40,6 +42,7 @@ switch (currentPage) {
 
   case "index.html":
   case "":
+    updateMenu();
     indexPage();
     break;
 }
@@ -67,15 +70,15 @@ async function request(url, method = "GET", data = null) {
   return response.json();
 }
 
+// ===============================
 // 로그인 여부 확인
+// ===============================
 function checkLogin() {
   const user = localStorage.getItem("user");
 
   // 로그인 정보가 없으면 로그인 페이지로 이동
   if (!user) {
-    alert("로그인이 필요합니다.");
-
-    location.href = "login.html";
+    window.location.href = "login.html";
 
     return false;
   }
@@ -220,16 +223,58 @@ function loginPage() {
   });
 }
 
+// ===============================
 // 메인 페이지
-function indexPage() {
-  // 로그인 여부 확인
-  if (!checkLogin()) return;
+// ===============================
+async function indexPage() {
+  // 투표 목록을 표시할 영역
+  const pollList = document.getElementById("pollList");
 
-  // 로그아웃 버튼
-  const logoutBtn = document.getElementById("logoutBtn");
+  // index.html이 아니면 종료
+  if (!pollList) return;
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", logout);
+  try {
+    // 서버에서 투표 목록 가져오기
+    const polls = await request("/polls");
+
+    // 기존 내용 삭제
+    pollList.innerHTML = "";
+
+    // 투표가 없는 경우
+    if (polls.length === 0) {
+      pollList.innerHTML = `
+                <p>등록된 투표가 없습니다.</p>
+            `;
+
+      return;
+    }
+
+    // 투표 목록 출력
+    polls.forEach((poll) => {
+      const card = document.createElement("div");
+
+      card.className = "poll-card";
+
+      card.innerHTML = `
+                <h3>${poll.title}</h3>
+
+                <p>선택지 : ${poll.options.join(", ")}</p>
+
+                <button onclick="location.href='result.html?id=${poll.id}'">
+                    결과 보기
+                </button>
+
+                <button onclick="votePoll(${poll.id})">
+                    투표하기
+                </button>
+            `;
+
+      pollList.appendChild(card);
+    });
+  } catch (error) {
+    console.error(error);
+
+    alert("투표 목록을 불러오지 못했습니다.");
   }
 }
 
@@ -240,10 +285,7 @@ function createPage() {
 }
 
 // 결과 페이지
-function resultPage() {
-  // 로그인 여부 확인
-  if (!checkLogin()) return;
-}
+function resultPage() {}
 
 // ===============================
 // 투표 생성 페이지
@@ -305,4 +347,38 @@ function createPage() {
       alert("투표 생성 중 오류가 발생했습니다.");
     }
   });
+}
+
+// ===============================
+// 로그아웃
+// ===============================
+function logout() {
+  // 로그인 정보 삭제
+  localStorage.removeItem("user");
+
+  alert("로그아웃되었습니다.");
+
+  // 메인 페이지로 이동
+  window.location.href = "index.html";
+}
+
+// ===============================
+// 메뉴 상태 변경
+// ===============================
+function updateMenu() {
+  const loginMenu = document.getElementById("loginMenu");
+  const signupMenu = document.getElementById("signupMenu");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  const isLogin = localStorage.getItem("user");
+
+  if (isLogin) {
+    if (loginMenu) loginMenu.style.display = "none";
+    if (signupMenu) signupMenu.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+  } else {
+    if (loginMenu) loginMenu.style.display = "inline-block";
+    if (signupMenu) signupMenu.style.display = "inline-block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
 }
