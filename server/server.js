@@ -51,6 +51,50 @@ app.get("/", (req, res) => {
 });
 
 // ====================
+// 회원 API
+// ====================
+
+// 회원가입
+app.post("/signup", (req, res) => {
+  const data = readData();
+
+  const { name, password } = req.body;
+
+  // 입력값 확인
+  if (!name || !password) {
+    return res.status(400).json({
+      message: "이름과 비밀번호를 입력해주세요.",
+    });
+  }
+
+  // 이미 가입된 사용자인지 확인
+  const existsUser = data.users.find((user) => user.name === name);
+
+  if (existsUser) {
+    return res.status(409).json({
+      message: "이미 존재하는 사용자입니다.",
+    });
+  }
+
+  const newUser = {
+    id: Date.now(),
+    name,
+    password,
+  };
+
+  // 사용자 추가
+  data.users.push(newUser);
+
+  // 파일 저장
+  saveData(data);
+
+  res.status(201).json({
+    message: "회원가입 성공",
+    user: newUser,
+  });
+});
+
+// ====================
 // 투표 API
 // ====================
 
