@@ -94,6 +94,41 @@ app.post("/signup", (req, res) => {
   });
 });
 
+// 로그인
+app.post("/login", (req, res) => {
+  const data = readData();
+
+  const { name, password } = req.body;
+
+  // 입력값 확인
+  if (!name || !password) {
+    return res.status(400).json({
+      message: "이름과 비밀번호를 입력해주세요.",
+    });
+  }
+
+  // 사용자 찾기
+  const user = data.users.find(
+    (user) => user.name === name && user.password === password,
+  );
+
+  // 로그인 실패
+  if (!user) {
+    return res.status(401).json({
+      message: "아이디 또는 비밀번호가 틀렸습니다.",
+    });
+  }
+
+  // 로그인 성공
+  res.json({
+    message: "로그인 성공",
+    user: {
+      id: user.id,
+      name: user.name,
+    },
+  });
+});
+
 // ====================
 // 투표 API
 // ====================
