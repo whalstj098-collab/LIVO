@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIVO</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- 헤더 -->
+    <header>
+      <h1>LIVO</h1>
+
+      <nav>
+        <a href="index.html">홈</a>
+        <a href="create.html">투표 만들기</a>
+        <a href="login.html">로그인</a>
+        <a href="signup.html">회원가입</a>
+      </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main>
+      <section class="title">
+        <h2>실시간 투표 시스템</h2>
+
+        <p>현재 진행 중인 투표입니다.</p>
+      </section>
+
+      <section id="pollList">
+        <!-- JavaScript가 여기에 추가 -->
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

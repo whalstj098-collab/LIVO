@@ -3,6 +3,7 @@
 // ====================
 
 const express = require("express");
+const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const fs = require("fs");
@@ -22,6 +23,7 @@ const PORT = 3000;
 const DATA_FILE = "./data.json";
 
 app.use(express.json());
+app.use(cors());
 
 // ====================
 // JSON 데이터 관리
